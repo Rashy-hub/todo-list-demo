@@ -28,6 +28,7 @@ const UserSchema = new mongoose.Schema(
         },
         salt: String,
         isAdmin: Boolean,
+        todos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'todos' }],
     },
     { timestamps: true }
 )

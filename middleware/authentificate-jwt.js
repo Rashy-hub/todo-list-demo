@@ -1,6 +1,5 @@
 const { decodeJWT } = require('../utils/jwt-utils')
 const UserModel = require('../models/user')
-//const { Op } = require('sequelize');
 
 /**
  * Middleware d'authentification via les JSON Web Token
@@ -8,53 +7,39 @@ const UserModel = require('../models/user')
  * @returns {(req: Request, res: Response, next: NextFunction) => Void}
  */
 const authentificateJwt = (options = { adminRight: false }) => {
-    /**
-     * Middleware pour gérer les jwt
-     * @param {Request} req
-     * @param {Response} res
-     * @param {NextFunction} next
-     */
     return async (req, res, next) => {
-        // Récuperation du header d'authenfication
-        // -> Exemple de résultat: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+        // Récupération du header d'authentification
         const authHeader = req.headers['authorization']
 
-        // Récuperation du JWT
+        // Récupération du JWT
         const token = authHeader && authHeader.split(' ')[1]
 
-        // Si aucun token n'a été recu, erreur 401.
+        // Si aucun token n'a été reçu, erreur 401.
         if (!token) {
             return res.sendStatus(401)
         }
 
-        // Récuperation des données du JWT
-        let tokenData
+        // Récupération des données du JWT
         try {
-            // Extraction des données
-            tokenData = await decodeJWT(token)
-        } catch (error) {
-            // En cas d'erreur, envoi d'un erreur
-            return res.sendStatus(403)
-        }
+            const tokenData = await decodeJWT(token)
 
-        // Vérification des droits de l'utilisateur si le flag "AdminRight" est présent
-        if (options.adminRight) {
-            // Validation des droits via la base de donnée
-            // -> Certitude d'avoir les données à jours
-
-            const admin = await UserModel.findOne({ _id: tokenData.id, isAdmin: true }) //db.users.findOne( { "_id": tokenData.id , "isAdmin": true })
-
-            // Erreur 403 si l'utilisateur n'a pas les droits
-            if (!admin) {
-                return res.sendStatus(403)
+            // Vérification des droits de l'utilisateur si le flag "adminRight" est présent
+            if (options.adminRight) {
+                const admin = await UserModel.findOne({ _id: tokenData.id, isAdmin: true })
+                if (!admin) {
+                    return res.sendStatus(403)
+                }
             }
+
+            // Ajout des infos du token à l'objet "request" de Express
+            req.user = tokenData
+
+            // On continue :)
+            next()
+        } catch (error) {
+            console.log(error)
+            res.sendStatus(403)
         }
-
-        // Ajout des infos du token a l'object "request" de Express
-        req.user = tokenData
-
-        // On continue :)
-        next()
     }
 }
 

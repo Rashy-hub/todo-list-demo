@@ -1,5 +1,5 @@
 require('dotenv-flow').config() // Load environment variables from .env file
-const Todo = require('./models/todo')
+
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
@@ -29,36 +29,23 @@ mongoose
     .connect(mongoURI)
     .then(() => console.log(`Connected to MongoDB - Connection string :  ${mongoURI}`))
     .catch((err) => console.error('Error connecting to MongoDB:', err))
-MONGO_LOCAL
+
 // Middleware
-app.set('view engine', 'ejs')
+
 app.use(logRequest)
 app.use(express.urlencoded({ extended: false }))
 app.use(express.static(path.join(__dirname, 'public'))) // Serve static assets from public folder
 
 // Routes
-//router.use('/todo', todoRouter)
-//router.use('/auth', authRouter)
-//app.use('/', router)
-
-app.get('/todo', async (req, res) => {
-    try {
-        const todos = await Todo.find()
-        res.render('layouts/main', { todos }) // Render only the todo list partial
-    } catch (err) {
-        console.error(err)
-        res.status(500).send('Error retrieving todos')
-    }
-})
-app.get('/', async (req, res) => {
-    res.redirect('/todo')
-})
-
-//those routes will  be displayed in public when 404 error
 registratedRoutes.push(todoRouter)
 registratedRoutes.push(authRouter)
 
-app.use('/', ...registratedRoutes)
+app.use('/api', ...registratedRoutes)
+
+// Handle root URL to serve index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'))
+})
 
 app.use('*', extractRoutes, (req, res) => {
     const errorMessage = 'Page not found. Available routes:'

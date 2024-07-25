@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Todo List App - Demo</title>
+        <link rel="stylesheet" href="/css/main-style.css" />
+        <script src="/javascript/main.js" defer></script>
+    </head>
+    <body>
+        <header>
+            <div class="header-container">
+                <div class="logo">
+                    <a href="/"><img src="/assets/home.svg" alt="Todo List App Logo" /></a>
+                </div>
+                <h1 class="title">Todo List App - Demo</h1>
+                <div class="auth-buttons">
+                    <button class="button loginButtonModal">Login</button>
+                    <button class="button logoutButton hidden">Logout</button>
+                    <button class="button registerButtonModal">Register</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <h2><span id="userSpan">Please connect to see the</span> todo list</h2>
+            <form action="api/todo/add" method="POST" class="addTodo">
+                <input type="hidden" name="user" id="usernameField" />
+                <input type="text" name="text" placeholder="Add a new todo" required maxlength="45" id="inputTodo" disabled />
+                <button type="submit" id="addTodo"><img src="/assets/add.svg" alt="Add Todo" /></button>
+            </form>
+            <ul class="todo-list"></ul>
+            <form action="api/todo/clear" method="POST" class="form-with-token">
+                <button id="clear" type="submit">Clear all</button>
+            </form>
+
+            <dialog id="registerModal" class="modal">
+                <div class="modal-header">
+                    <h2>Register</h2>
+                    <button class="closeModalBtn">✖</button>
+                </div>
+                <form id="registerForm">
+                    <div class="modal-container">
+                        <div class="modal-content">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" required />
+
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" required />
+
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" required />
+                        </div>
+                        <br />
+                        <div class="modal-footer">
+                            <button type="submit" class="primary">Register</button>
+                            <button type="button" class="secondary cancelBtn">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </dialog>
+
+            <dialog id="loginModal" class="modal">
+                <div class="modal-header">
+                    <h2>Login</h2>
+                    <button class="closeModalBtn">✖</button>
+                </div>
+                <form id="loginForm">
+                    <div class="modal-container">
+                        <div class="modal-content">
+                            <label for="loginEmail">Email:</label>
+                            <input type="email" id="loginEmail" name="email" required />
+
+                            <label for="loginPassword">Password:</label>
+                            <input type="password" id="loginPassword" name="password" required />
+                        </div>
+                        <br />
+                        <div class="modal-footer">
+                            <button type="submit" class="primary">Login</button>
+                            <button type="button" class="secondary cancelBtn">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </dialog>
+
+            <dialog id="dialog-box">
+                <div class="dialog-header">
+                    <h2>Dialog Title</h2>
+                </div>
+                <div class="dialog-body">
+                    <p>Dialog body text</p>
+                </div>
+                <div class="dialog-footer">
+                    <button id="dialog-ok-button">OK</button>
+                </div>
+            </dialog>
+        </main>
+
+        <footer>
+            <p>Rachid Yagoubi &copy; Becode 2024</p>
+        </footer>
+    </body>
+</html>

@@ -1,104 +1,93 @@
-//const db = require('../models'); replace with mongoose schema
 const bcrypt = require('bcrypt')
 const UserModel = require('../models/user')
-//replace Op object (sequalize) with mongooose
-const { ErrorResponse } = require('../utils/error-schema')
 const { generateJWT } = require('../utils/jwt-utils')
+const { ErrorResponse } = require('../utils/error-schema')
 
 const authController = {
     register: async (req, res) => {
-        console.log('REGISTER')
-        // Recuperation des données
-        const { username, email } = req.validatedData
+        const { username, email, password } = req.validatedData
 
-        // Hashage du mot de passe à l'aide de "bcrypt"
-        const password = await bcrypt.hash(req.validatedData.password, 10)
-
-        // Création du compte en base de données
-
-        // Create an instance of model SomeModel
-        const newuser = new UserModel({ username, email, password })
-        //   Génération d'un « Json Web Token »
-        const token = await generateJWT({
-            id: newuser._id,
-            pseudo: newuser.username,
-            isAdmin: newuser.isAdmin,
-        })
-        console.log(token)
-        //save data
         try {
-            const savedUser = await newuser.save()
-            token.id = savedUser._id
-            console.log('test ' + savedUser._id)
+            // Hashage du mot de passe
+            const hashedPassword = await bcrypt.hash(password, 10)
 
-            console.log(username + ' has been registered in database')
-            res.json({ title: 'Registration', message: `${username} has correctly been registered in database \n token:${token.id}` })
-        } catch (err) {
-            return res.status(422).json(new ErrorResponse('Bad credential ' + err, 422))
+            // Création de l'utilisateur
+            const newUser = new UserModel({ username, email, password: hashedPassword })
+
+            // Enregistrement dans la base de données
+            const savedUser = await newUser.save()
+
+            // Génération du JWT
+            const token = await generateJWT({
+                id: savedUser._id,
+                pseudo: savedUser.username,
+                isAdmin: savedUser.isAdmin,
+            })
+
+            res.json({
+                title: 'Registration',
+                message: `${username} has been registered`,
+                token: token.token,
+            })
+        } catch (error) {
+            res.status(422).json(new ErrorResponse('Registration failed: ' + error.message, 422))
         }
-
-        // déja preparer une gallerie favorie
     },
 
     login: async (req, res) => {
-        // Recuperation des données
-
         const { email, password } = req.validatedData
 
-        // Récuperation du compte "member" à l'aide du pseudo ou de l'email avec mongoose
-        //const member = {pseudo:identifier,email:"test@gmail.com"}
-        const logeduser = await UserModel.findOne({ email: email })
-        // Erreur 422, si le member n'existe pas (pseudo ou email invalide)
-        if (!logeduser) {
-            return res.status(422).json(new ErrorResponse('Bad credential', 422))
+        try {
+            // Trouver l'utilisateur
+            const user = await UserModel.findOne({ email: email })
+            if (!user) {
+                return res.status(422).json(new ErrorResponse('Invalid credentials', 422))
+            }
+
+            // Vérification du mot de passe
+            const isValid = await bcrypt.compare(password, user.password)
+            if (!isValid) {
+                return res.status(422).json(new ErrorResponse('Invalid credentials', 422))
+            }
+
+            // Génération du JWT
+            const token = await generateJWT({
+                id: user._id,
+                pseudo: user.username,
+                isAdmin: user.isAdmin,
+            })
+
+            res.json({
+                title: 'Logged In',
+                message: `${user.username} is logged in`,
+                token: token.token,
+                user: user.username,
+                id: user._id,
+            })
+        } catch (error) {
+            res.status(500).json(new ErrorResponse('Login failed: ' + error.message, 500))
         }
-
-        // Si le member existe: Vérification du password via "bcrypt"
-        const isValid = await bcrypt.compare(password, logeduser.password)
-
-        // Erreur 422, si le mot de passe ne correspond pas au hashage
-        if (!isValid) {
-            return res.status(422).json(new ErrorResponse('Bad credential', 422))
-        }
-
-        // console.log(`ici les data login ${isValid} ${logeduser}`)
-        // Génération d'un « Json Web Token »
-        const token = await generateJWT({
-            id: logeduser._id,
-            pseudo: logeduser.username,
-            isAdmin: logeduser.isAdmin,
-        })
-        token.id = logeduser._id
-        // Envoi du token
-        console.log(logeduser.username + ' is logged ')
-        res.json({ title: 'Logged', message: `${logeduser.username} is logged \n token:${token.id},`, token: token.id, user: logeduser.username })
     },
 
     refresh: async (req, res) => {
-        // Recuperation des données
         const { email } = req.validatedData
-        console.log('into refresh: ' + email)
 
-        const member = await db.Member.findOne({
-            where: {
-                // Condition avec un OU en SQL
-                email: { [Op.eq]: email.toLowerCase() },
-            },
-        })
-        if (member) {
-            // Génération d'un « Json Web Token »
+        try {
+            const user = await UserModel.findOne({ email: email })
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' })
+            }
+
+            // Génération du JWT
             const token = await generateJWT({
-                id: member.id,
-                email: member.email,
-                isadmin: member.isadmin,
+                id: user._id,
+                pseudo: user.username,
+                isAdmin: user.isAdmin,
             })
-            token.isadmin = member.isadmin
-            token.id = member.id
 
-            // Envoi du token
-            res.json(token)
-        } else {
-            res.json(null)
+            res.json({ token: token.token })
+        } catch (error) {
+            res.status(500).json(new ErrorResponse('Token refresh failed: ' + error.message, 500))
         }
     },
 }
