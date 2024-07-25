@@ -28,6 +28,7 @@ const authController = {
                 title: 'Registration',
                 message: `${username} has been registered`,
                 token: token.token,
+                user: username,
             })
         } catch (error) {
             res.status(422).json(new ErrorResponse('Registration failed: ' + error.message, 422))

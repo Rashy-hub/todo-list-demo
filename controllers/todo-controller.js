@@ -102,12 +102,19 @@ exports.deleteTodo = async (req, res) => {
 }
 
 exports.clearTodo = async (req, res) => {
+    // Ensure req.user is populated with the authenticated user's information
+    if (!req.user || !req.user.id) {
+        return res.status(401).send('Unauthorized: User not authenticated')
+    }
+
+    const userId = req.user.id // Get the logged-in user's ID
+
     try {
-        todos = {}
-        await Todo.deleteMany({})
+        // Delete all todos associated with the user ID
+        await Todo.deleteMany({ user: userId })
         res.json({ todos: [] })
     } catch (err) {
         console.error(err)
-        res.status(500).send('Error deleting todo')
+        res.status(500).send('Error clearing todos')
     }
 }
