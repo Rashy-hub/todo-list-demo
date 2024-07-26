@@ -27,11 +27,11 @@
             <form action="api/todo/add" method="POST" class="addTodo">
                 <input type="hidden" name="user" id="usernameField" />
                 <input type="text" name="text" placeholder="Add a new todo" required maxlength="45" id="inputTodo" disabled />
-                <button type="submit" id="addTodo"><img src="/assets/add.svg" alt="Add Todo" /></button>
+                <button type="submit" id="addTodo" disabled><img src="/assets/add.svg" alt="Add Todo" /></button>
             </form>
             <ul class="todo-list"></ul>
             <form action="api/todo/clear" method="POST" class="form-with-token">
-                <button id="clear" type="submit">Clear all</button>
+                <button id="clear" type="submit" disabled>Clear all</button>
             </form>
 
             <dialog id="registerModal" class="modal">
