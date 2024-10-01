@@ -8,16 +8,12 @@ const authController = {
         const { username, email, password } = req.validatedData
 
         try {
-            // Hashage du mot de passe
             const hashedPassword = await bcrypt.hash(password, 10)
 
-            // Création de l'utilisateur
             const newUser = new UserModel({ username, email, password: hashedPassword })
 
-            // Enregistrement dans la base de données
             const savedUser = await newUser.save()
 
-            // Génération du JWT
             const token = await generateJWT({
                 id: savedUser._id,
                 pseudo: savedUser.username,
@@ -39,19 +35,16 @@ const authController = {
         const { email, password } = req.validatedData
 
         try {
-            // Trouver l'utilisateur
             const user = await UserModel.findOne({ email: email })
             if (!user) {
                 return res.status(422).json(new ErrorResponse('Invalid credentials', 422))
             }
 
-            // Vérification du mot de passe
             const isValid = await bcrypt.compare(password, user.password)
             if (!isValid) {
                 return res.status(422).json(new ErrorResponse('Invalid credentials', 422))
             }
 
-            // Génération du JWT
             const token = await generateJWT({
                 id: user._id,
                 pseudo: user.username,
@@ -79,7 +72,6 @@ const authController = {
                 return res.status(404).json({ message: 'User not found' })
             }
 
-            // Génération du JWT
             const token = await generateJWT({
                 id: user._id,
                 pseudo: user.username,

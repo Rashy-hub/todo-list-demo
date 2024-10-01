@@ -8,10 +8,8 @@ const UserModel = require('../models/user')
  */
 const authentificateJwt = (options = { adminRight: false }) => {
     return async (req, res, next) => {
-        // Récupération du header d'authentification
         const authHeader = req.headers['authorization']
 
-        // Récupération du JWT
         const token = authHeader && authHeader.split(' ')[1]
 
         // Si aucun token n'a été reçu, erreur 401.
@@ -19,7 +17,6 @@ const authentificateJwt = (options = { adminRight: false }) => {
             return res.sendStatus(401)
         }
 
-        // Récupération des données du JWT
         try {
             const tokenData = await decodeJWT(token)
 

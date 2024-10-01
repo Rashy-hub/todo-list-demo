@@ -23,7 +23,6 @@ const bodyValidation = (yupValidator, errorCode = 422) => {
                 // Ajout d'une propriété "validedData" avec les données validées par yup
                 req.validatedData = data
 
-                // Appel de la méthode "next"
                 next()
             })
             .catch((yupError) => {
@@ -38,7 +37,6 @@ const bodyValidation = (yupValidator, errorCode = 422) => {
                     return acc
                 }, {})
 
-                // Envoi d'un réponse d'erreur formatté
                 res.status(errorCode).json(new InvalidFieldErrorResponse('Data invalid', errors, errorCode))
             })
     }
